@@ -149,3 +149,20 @@ goesrecv -> goesproc --mode packet
   - `vendor/tinytoml`
 - No source files were changed while preparing these notes.
 - The build was not run as part of writing this file.
+
+# Development Notes
+
+Current goal: Build goestools on WSL/Ubuntu with modern CMake/GCC.
+
+Changes made:
+- Updated root CMake minimum version.
+- Initialized vendor submodules.
+- Added missing <cstdint> include to packet_publisher.h.
+
+Current status:
+- CMake configure succeeds.
+- Build is in progress / next error unknown.
+
+Next step:
+- Run: cmake --build build -j$(nproc)
+- Fix any remaining modern compiler errors with minimal patches.
