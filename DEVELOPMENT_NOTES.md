@@ -179,31 +179,117 @@ goesrecv -> goeslrit -> .lrit files -> goesproc --mode lrit
 goesrecv -> goesproc --mode packet
 ```
 
-## Issues Observed During Repository Inspection
+## Recent Documentation And Tooling Additions
 
-- The working tree already had uncommitted changes before these notes were
-  added:
-  - `CMakeLists.txt`
-  - `src/goesrecv/packet_publisher.h`
-  - `vendor/libaec`
-  - `vendor/sanitizers-cmake`
-  - `vendor/tinytoml`
-- No source files were changed while preparing these notes.
-- The build was not run as part of writing this file.
+These additions are outside the core receiver/decoder path. They are intended
+to make build verification, service operation, monitoring, and future dashboard
+work easier without changing C++ receiver behavior.
 
-# Development Notes
+### Repository Agent Guidance
 
-Current goal: Build goestools on WSL/Ubuntu with modern CMake/GCC.
+`AGENTS.md` now documents repository working rules:
 
-Changes made:
-- Updated root CMake minimum version.
-- Initialized vendor submodules.
-- Added missing <cstdint> include to packet_publisher.h.
+- Preserve existing receiver and decoder behavior.
+- Prefer small build, packaging, documentation, and portability fixes.
+- Prefer wrapper scripts, services, dashboards, monitoring, and operator tools
+  before refactoring DSP, demodulation, Viterbi, Reed-Solomon, packet
+  processing, or LRIT/EMWIN/DCS decoding internals.
 
-Current status:
-- CMake configure succeeds.
-- Build is in progress / next error unknown.
+### Receiver Pipeline Documentation
 
-Next step:
-- Run: cmake --build build -j$(nproc)
-- Fix any remaining modern compiler errors with minimal patches.
+`docs/receiver-pipeline.md` maps the major executables and data flow:
+
+- `goesrecv` owns RF/sample input, demodulation, decoding, and packet
+  publication.
+- `goespackets` relays, filters, records, and republishes 892-byte VCDU packet
+  streams.
+- `goeslrit` assembles decoded VCDU packets into LRIT files.
+- `goesemwin` extracts EMWIN fragments, QBT packets, and EMWIN files.
+- `goesproc` processes packet streams or LRIT files into image/text products.
+
+The document also identifies the source files that appear to own each stage and
+calls out stable integration points for wrapper/dashboard work.
+
+### Receiver Stats Interface Documentation
+
+`docs/stats-interface.md` describes the existing `goesrecv` stats streams:
+
+- Demodulator stats publisher, commonly `tcp://0.0.0.0:6001`.
+- Decoder stats publisher, commonly `tcp://0.0.0.0:6002`.
+- JSON message fields for gain, frequency correction, clock recovery,
+  Viterbi/Reed-Solomon correction counts, skipped symbols, and packet success.
+- Aggregation behavior used by the existing in-process `Monitor`.
+
+This is intended as the interface reference for future monitoring and dashboard
+prototypes.
+
+### systemd User Service Examples
+
+`systemd/examples/` contains user-service examples that do not assume a root
+install:
+
+- `goesrecv.service`
+- `goesproc.service`
+- `README.md`
+
+The examples use per-user paths such as `%h/.local/bin`, `%E/goestools`, and
+`%h/goes-data`, and the README explains how to customize binary paths, config
+paths, output directories, and packet subscribe addresses.
+
+### Python Monitor Prototype
+
+`tools/monitor/` contains a standalone Python prototype:
+
+- `stats_subscriber.py` subscribes to a `goesrecv` nanomsg stats endpoint,
+  parses each received JSON object, and prints it.
+- `README.md` documents usage for demodulator and decoder stats endpoints.
+
+The prototype is intentionally separate from the C++/CMake build. It uses
+Python `ctypes` with the system `libnanomsg`, so it does not add a Python
+package dependency.
+
+### Python Product Catalog Prototype
+
+`tools/catalog/` contains a standalone SQLite catalog prototype:
+
+- `catalog_products.py` scans a `goesproc` or `goeslrit` output directory and
+  records filename, inferred timestamp, inferred product type, file size,
+  modification time, and scan time.
+- `README.md` documents usage, product type heuristics, timestamp parsing, and
+  the SQLite schema.
+
+The script is designed for future dashboard/search work and is not connected to
+the C++ build.
+
+### Smoke Build Script
+
+`scripts/smoke_build.sh` is a non-destructive build verification helper:
+
+- Verifies recursive submodules are checked out.
+- Configures CMake in a fresh temporary directory under `${TMPDIR:-/tmp}`.
+- Builds from that temporary tree.
+- Does not install anything and does not touch the repository's normal `build/`
+  directory.
+- Leaves the temporary build directory in place for inspection.
+
+The script passes `-DCMAKE_POLICY_VERSION_MINIMUM=3.5` by default because newer
+CMake versions reject older vendored `cmake_minimum_required` declarations in a
+fresh configure otherwise. This avoids modifying vendor source code.
+
+Verification performed:
+
+- `scripts/smoke_build.sh` completed a fresh configure/build successfully to
+  `100%`.
+- `tools/monitor/stats_subscriber.py --help` ran successfully, and a syntax
+  compile check passed.
+- `tools/catalog/catalog_products.py --help` ran successfully.
+- `tools/catalog/catalog_products.py` was smoke-tested against a scratch output
+  tree with sample image, LRIT, text, and packet files; it created a SQLite
+  catalog and inferred the expected product types/timestamps.
+
+## Historical Inspection Notes
+
+Earlier WSL/Ubuntu inspection found a dirty worktree with CMake, vendored
+dependency, and include-path issues. Those details are preserved in
+`ubuntu_changes.txt` under "Errors Encountered And Fixes"; the current build
+verification status is the smoke-build result above.

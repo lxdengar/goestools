@@ -1,0 +1,26 @@
+# Example systemd user service for goesproc.
+#
+# Install for one user with:
+#   mkdir -p ~/.config/systemd/user
+#   cp goesproc.service ~/.config/systemd/user/
+#   systemctl --user daemon-reload
+#   systemctl --user enable --now goesproc.service
+#
+# Customize ExecStart if goesproc is not installed in ~/.local/bin. For a build
+# tree, use something like:
+#   ExecStart=%h/dev/goestools/build/src/goesproc/goesproc -c %E/goestools/goesproc.conf -m packet --subscribe tcp://127.0.0.1:5004 --out %h/goes-data
+
+[Unit]
+Description=goestools product processor
+Documentation=https://pietern.github.io/goestools/
+After=goesrecv.service
+
+[Service]
+Type=simple
+WorkingDirectory=%h/goes-data
+ExecStart=%h/.local/bin/goesproc -c %E/goestools/goesproc.conf -m packet --subscribe tcp://127.0.0.1:5004 --out %h/goes-data
+Restart=on-failure
+RestartSec=30
+
+[Install]
+WantedBy=default.target

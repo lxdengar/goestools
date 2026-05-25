@@ -1,0 +1,25 @@
+# Example systemd user service for goesrecv.
+#
+# Install for one user with:
+#   mkdir -p ~/.config/systemd/user
+#   cp goesrecv.service ~/.config/systemd/user/
+#   systemctl --user daemon-reload
+#   systemctl --user enable --now goesrecv.service
+#
+# Customize ExecStart if goesrecv is not installed in ~/.local/bin. For a build
+# tree, use something like:
+#   ExecStart=%h/dev/goestools/build/src/goesrecv/goesrecv -i 10 -c %E/goestools/goesrecv.conf
+
+[Unit]
+Description=goestools receiver and decoder
+Documentation=https://pietern.github.io/goestools/
+
+[Service]
+Type=simple
+ExecStart=%h/.local/bin/goesrecv -i 10 -c %E/goestools/goesrecv.conf
+Restart=on-failure
+RestartSec=30
+Nice=-5
+
+[Install]
+WantedBy=default.target
