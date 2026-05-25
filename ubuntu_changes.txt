@@ -17,6 +17,11 @@ Changed:
   libaec::aec/libaec::sz.
 - src/goesrecv/packet_publisher.h: fixed the pre-existing bad include by using
   <cstdint>, which was necessary to compile.
+- scripts/build_wsl.sh: added a repeatable WSL/Ubuntu build helper that checks
+  for required tools and runs the out-of-tree CMake build without installing
+  packages.
+- docker/Dockerfile.ubuntu-dev: added a minimal Ubuntu development image that
+  can build the project from a mounted source checkout.
 
 Verification:
 
@@ -27,6 +32,9 @@ Verification:
 - Step 3 ZLIB::ZLIB configure/build passed.
 - Final executable check passed for goesrecv, goeslrit, goesproc, and
   goespackets.
+- scripts/build_wsl.sh configure/build passed using the existing build tree.
+- Dockerfile syntax/configuration was reviewed; build verification depends on
+  Docker daemon availability.
 
 Notes:
 
@@ -34,6 +42,44 @@ Notes:
   CMake files.
 - OpenCV emits system-header warnings during compilation.
 - Neither warning class blocks the build.
+
+WSL Build Helper
+----------------
+
+Use the helper from the repository root:
+
+  scripts/build_wsl.sh
+
+The script installs no packages. It checks for cmake, git, pkg-config, make, a C
+compiler, and a C++ compiler. It then creates or reuses the out-of-tree build
+directory, configures with CMAKE_INSTALL_PREFIX set to /usr/local by default,
+and builds with the detected CPU count.
+
+Optional overrides:
+
+  BUILD_DIR=build-debug CMAKE_BUILD_TYPE=Debug scripts/build_wsl.sh
+  CMAKE_INSTALL_PREFIX=/opt/goestools scripts/build_wsl.sh
+
+The script is safe to run repeatedly after source changes or after a successful
+build.
+
+Docker Ubuntu Build
+-------------------
+
+Build the minimal Ubuntu development image from the repository root:
+
+  docker build -f docker/Dockerfile.ubuntu-dev -t goestools-ubuntu-dev .
+
+Run the project build by mounting the checkout:
+
+  docker run --rm -v "$PWD":/workspace -w /workspace goestools-ubuntu-dev
+
+The image default command runs scripts/build_wsl.sh, which checks prerequisites,
+creates or reuses build/, configures CMake, and builds with the detected CPU
+count. Initialize submodules in the checkout before running the container if
+they are not already populated:
+
+  git submodule update --init --recursive
 
 Errors Encountered And Fixes
 ----------------------------

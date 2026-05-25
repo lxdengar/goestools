@@ -66,6 +66,47 @@ cmake .. -DCMAKE_INSTALL_PREFIX=/usr/local
 cmake --build . -j"$(nproc)"
 ```
 
+The repeatable WSL/Ubuntu helper runs the same out-of-tree CMake build without
+installing packages:
+
+```sh
+scripts/build_wsl.sh
+```
+
+The script checks for required build tools, creates or reuses `build/`, runs
+CMake configure, and then builds with the detected CPU count. It is safe to run
+again after source changes or after a successful build.
+
+Optional environment overrides:
+
+```sh
+BUILD_DIR=build-debug CMAKE_BUILD_TYPE=Debug scripts/build_wsl.sh
+CMAKE_INSTALL_PREFIX=/opt/goestools scripts/build_wsl.sh
+```
+
+## Docker Ubuntu Build
+
+The minimal Ubuntu development image installs only the packages needed to build
+the default project from source. Build it from the repository root:
+
+```sh
+docker build -f docker/Dockerfile.ubuntu-dev -t goestools-ubuntu-dev .
+```
+
+Run the build by mounting the checkout into the container:
+
+```sh
+docker run --rm -v "$PWD":/workspace -w /workspace goestools-ubuntu-dev
+```
+
+The container default command runs `scripts/build_wsl.sh`, so it creates or
+reuses `build/` and performs the normal out-of-tree CMake build. Initialize
+submodules in the checkout before using the container if needed:
+
+```sh
+git submodule update --init --recursive
+```
+
 Optional install:
 
 ```sh
