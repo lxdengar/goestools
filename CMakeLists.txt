@@ -164,3 +164,8 @@ option(BUILD_GOESPACKETS "Build goespackets" ON)
 if(${BUILD_GOESPACKETS})
   add_subdirectory(src/goespackets)
 endif()
+
+option(BUILD_GOESTOOLS_STATION "Build Qt Widgets station dashboard prototype" OFF)
+if(${BUILD_GOESTOOLS_STATION})
+  add_subdirectory(apps/goestools-station)
+endif()
