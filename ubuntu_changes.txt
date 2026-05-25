@@ -1,0 +1,140 @@
+Ubuntu Build Modernization Notes
+=================================
+
+Summary
+-------
+
+Implemented a minimal CMake modernization and verified after each step.
+
+Changed:
+
+- CMakeLists.txt: added C/C++ standard properties, Threads, ZLIB, and libaec
+  generated/source include paths.
+- src/goesrecv/CMakeLists.txt: replaced raw pthread linkage with
+  Threads::Threads.
+- src/lib/CMakeLists.txt: replaced raw z linkage with ZLIB::ZLIB.
+- src/assembler/CMakeLists.txt: replaced raw aec/sz linkage with
+  libaec::aec/libaec::sz.
+- src/goesrecv/packet_publisher.h: fixed the pre-existing bad include by using
+  <cstdint>, which was necessary to compile.
+
+Verification:
+
+- Step 1 configure/build passed after resolving pre-existing blockers from the
+  dirty tree: bad cstdinit, uninitialized vendor/tinytoml, and updated libaec
+  include/link behavior.
+- Step 2 Threads::Threads configure/build passed.
+- Step 3 ZLIB::ZLIB configure/build passed.
+- Final executable check passed for goesrecv, goeslrit, goesproc, and
+  goespackets.
+
+Notes:
+
+- CMake still emits deprecation warnings for old minimums in top-level/vendor
+  CMake files.
+- OpenCV emits system-header warnings during compilation.
+- Neither warning class blocks the build.
+
+Errors Encountered And Fixes
+----------------------------
+
+1. Missing cstdinit header
+
+Error:
+
+  src/goesrecv/packet_publisher.h:4:10: fatal error: cstdinit: No such file or directory
+
+Cause:
+
+  The dirty worktree already had an invalid include in packet_publisher.h.
+
+Fix:
+
+  Replaced <cstdinit> with <cstdint>.
+
+2. Missing szlib.h
+
+Error:
+
+  src/assembler/session_pdu.h:8:10: fatal error: szlib.h: No such file or directory
+
+Cause:
+
+  The updated vendor/libaec layout places szlib.h under vendor/libaec/include,
+  but the project only added vendor/libaec/src to the include path.
+
+Fix:
+
+  Added vendor/libaec/include to the project include paths.
+
+3. Missing toml/toml.h
+
+Error:
+
+  src/goesrecv/config.cc:7:10: fatal error: toml/toml.h: No such file or directory
+
+Cause:
+
+  vendor/tinytoml was present as a submodule directory but its contents were
+  not checked out.
+
+Fix:
+
+  Ran:
+
+    git submodule update --init vendor/tinytoml
+
+4. Missing libaec.h from szlib.h
+
+Error:
+
+  vendor/libaec/include/szlib.h:41:10: fatal error: libaec.h: No such file or directory
+
+Cause:
+
+  Current libaec generates libaec.h into the build tree at
+  build/vendor/libaec/include/libaec.h.
+
+Fix:
+
+  Added ${PROJECT_BINARY_DIR}/vendor/libaec/include to the project include
+  paths.
+
+5. Linker could not find raw libaec libraries
+
+Error:
+
+  /usr/bin/x86_64-linux-gnu-ld.bfd: cannot find -laec: No such file or directory
+  /usr/bin/x86_64-linux-gnu-ld.bfd: cannot find -lsz: No such file or directory
+
+Cause:
+
+  The updated vendored libaec CMake exports targets instead of relying on raw
+  library names being discoverable through the link path.
+
+Fix:
+
+  Replaced assembler linkage from:
+
+    aec sz
+
+  to:
+
+    libaec::aec libaec::sz
+
+Verification Commands
+---------------------
+
+Configured and built out of tree:
+
+  mkdir -p build
+  cd build
+  cmake .. -DCMAKE_INSTALL_PREFIX=/usr/local
+  cmake --build . -j$(nproc)
+
+Checked representative executables:
+
+  build/src/goesrecv/goesrecv
+  build/src/goeslrit/goeslrit
+  build/src/goesproc/goesproc
+  build/src/goespackets/goespackets

@@ -1,6 +1,13 @@
-cmake_minimum_required(VERSION 2.8.12 FATAL_ERROR)
+cmake_minimum_required(VERSION 3.5)
 
 project(goesdec CXX C)
+
+set(CMAKE_C_STANDARD 11)
+set(CMAKE_C_STANDARD_REQUIRED ON)
+set(CMAKE_C_EXTENSIONS OFF)
+set(CMAKE_CXX_STANDARD 14)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(CMAKE_CXX_EXTENSIONS OFF)
 
 # Remove directory from CMAKE_CXX_IMPLICIT_LINK_DIRECTORIES and add it
 # to the link directories list. This is needed to prioritize the
@@ -41,6 +48,9 @@ else()
   endfunction()
 endif()
 
+find_package(Threads REQUIRED)
+find_package(ZLIB REQUIRED)
+
 # Force static build of libaec
 set(BUILD_SHARED_LIBS OFF CACHE INTERNAL "" FORCE)
 
@@ -55,8 +65,8 @@ if(NOT CMAKE_BUILD_TYPE AND NOT CMAKE_CONFIGURATION_TYPES)
     "Debug" "Release" "MinSizeRel" "RelWithDebInfo")
 endif()
 
-set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -std=c11 -pedantic -Wall")
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++14 -pedantic -Wall")
+set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -pedantic -Wall")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -pedantic -Wall")
 if("${CMAKE_BUILD_TYPE}" EQUAL "Release")
   set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -O3")
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -O3")
@@ -85,6 +95,8 @@ execute_process(COMMAND
 
 include_directories(BEFORE SYSTEM ${PROJECT_BINARY_DIR}/include)
 include_directories(BEFORE SYSTEM ${PROJECT_SOURCE_DIR}/vendor/libcorrect/include)
+include_directories(BEFORE SYSTEM ${PROJECT_BINARY_DIR}/vendor/libaec/include)
+include_directories(BEFORE SYSTEM ${PROJECT_SOURCE_DIR}/vendor/libaec/include)
 include_directories(BEFORE SYSTEM ${PROJECT_SOURCE_DIR}/vendor/libaec/src)
 include_directories(BEFORE SYSTEM ${PROJECT_SOURCE_DIR}/vendor/tinytoml/include)
 include_directories(${PROJECT_SOURCE_DIR}/src)
