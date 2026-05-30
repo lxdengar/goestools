@@ -11,8 +11,17 @@ Welcome to goestools's documentation!
    :caption: Contents:
 
    installation
+   quickstart
+   configuration
    commands
    guides
+   tools
+   station
+   development
+   receiver-pipeline
+   stats-interface
+   station-monitoring
+   station-app
    resources
 
 

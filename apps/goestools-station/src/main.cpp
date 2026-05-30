@@ -1,5 +1,6 @@
 #include <QApplication>
 #include <QAbstractItemView>
+#include <QColor>
 #include <QDateTime>
 #include <QHeaderView>
 #include <QHBoxLayout>
@@ -28,10 +29,77 @@ QString now() {
   return QDateTime::currentDateTimeUtc().toString(Qt::ISODate);
 }
 
+void applyDarkPalette(QApplication& app) {
+  QPalette palette;
+  palette.setColor(QPalette::Window, QColor("#111318"));
+  palette.setColor(QPalette::WindowText, QColor("#e6edf3"));
+  palette.setColor(QPalette::Base, QColor("#0b0d11"));
+  palette.setColor(QPalette::AlternateBase, QColor("#151922"));
+  palette.setColor(QPalette::Text, QColor("#e6edf3"));
+  palette.setColor(QPalette::Button, QColor("#1c222d"));
+  palette.setColor(QPalette::ButtonText, QColor("#e6edf3"));
+  palette.setColor(QPalette::Highlight, QColor("#4f8cff"));
+  palette.setColor(QPalette::HighlightedText, QColor("#ffffff"));
+  app.setPalette(palette);
+}
+
+QString darkStyleSheet() {
+  return
+    "QMainWindow { background: #111318; }"
+    "QLabel { color: #e6edf3; }"
+    "QLineEdit, QPlainTextEdit, QTableView {"
+    "  background: #0b0d11;"
+    "  color: #e6edf3;"
+    "  border: 1px solid #303846;"
+    "  selection-background-color: #315fbb;"
+    "  selection-color: #ffffff;"
+    "}"
+    "QLineEdit { padding: 5px 7px; }"
+    "QPlainTextEdit { font-family: monospace; }"
+    "QPushButton {"
+    "  background: #242c39;"
+    "  color: #f3f7fb;"
+    "  border: 1px solid #435065;"
+    "  padding: 6px 12px;"
+    "}"
+    "QPushButton:hover { background: #2d3747; }"
+    "QPushButton:pressed { background: #39465a; }"
+    "QPushButton:disabled { color: #697386; background: #161b23; border-color: #252b35; }"
+    "QHeaderView::section {"
+    "  background: #1f2632;"
+    "  color: #e6edf3;"
+    "  border: 0;"
+    "  border-right: 1px solid #303846;"
+    "  padding: 5px 7px;"
+    "}"
+    "QTableView { gridline-color: #252c38; }"
+    "QTableView::item:selected { background: #315fbb; color: #ffffff; }"
+    "QTabWidget::pane { border: 1px solid #303846; background: #111318; }"
+    "QTabBar::tab {"
+    "  padding: 8px 14px;"
+    "  color: #e9eef5;"
+    "  font-weight: 600;"
+    "  border: 1px solid #303846;"
+    "  border-bottom: 0;"
+    "}"
+    "QTabBar::tab:nth-of-type(1) { background: #173626; }"
+    "QTabBar::tab:nth-of-type(2) { background: #18314f; }"
+    "QTabBar::tab:nth-of-type(3) { background: #32234d; }"
+    "QTabBar::tab:nth-of-type(4) { background: #213917; }"
+    "QTabBar::tab:nth-of-type(5) { background: #4a2c16; }"
+    "QTabBar::tab:nth-of-type(6) { background: #3a2f24; }"
+    "QTabBar::tab:selected {"
+    "  border-bottom: 3px solid #8fb8ff;"
+    "  color: #ffffff;"
+    "}"
+    "QTabBar::tab:!selected { color: #bac4d2; }";
+}
+
 void applyPageColor(QWidget* widget, const QString& color) {
   widget->setAutoFillBackground(true);
   auto palette = widget->palette();
   palette.setColor(QPalette::Window, QColor(color));
+  palette.setColor(QPalette::WindowText, QColor("#e6edf3"));
   widget->setPalette(palette);
 }
 
@@ -50,7 +118,7 @@ public:
   explicit ProcessTab(ManagedProcess* process, QWidget* parent = nullptr)
     : QWidget(parent),
       process_(process) {
-    applyPageColor(this, "#edf6ff");
+    applyPageColor(this, "#101927");
     auto* layout = new QVBoxLayout(this);
 
     auto* commandRow = new QHBoxLayout;
@@ -240,7 +308,7 @@ public:
   explicit LogsTab(ManagedProcess* process, QWidget* parent = nullptr)
     : QWidget(parent),
       process_(process) {
-    applyPageColor(this, "#fff4e8");
+    applyPageColor(this, "#21180f");
     auto* layout = new QVBoxLayout(this);
 
     auto* filterRow = new QHBoxLayout;
@@ -327,7 +395,7 @@ public:
     : QWidget(parent),
       model_(new ProductCatalogModel(this)),
       scanner_(new ProductScanner(this)) {
-    applyPageColor(this, "#f1f8ea");
+    applyPageColor(this, "#122016");
     auto* layout = new QVBoxLayout(this);
 
     auto* controlsRow = new QHBoxLayout;
@@ -392,24 +460,13 @@ public:
     auto* process = new ManagedProcess(this);
 
     auto* tabs = new QTabWidget;
-    tabs->setStyleSheet(
-      "QTabWidget::pane { border: 1px solid #b8bec8; }"
-      "QTabBar::tab { padding: 8px 14px; color: #172033; font-weight: 600; }"
-      "QTabBar::tab:nth-of-type(1) { background: #d7f2e3; }"
-      "QTabBar::tab:nth-of-type(2) { background: #d8ebff; }"
-      "QTabBar::tab:nth-of-type(3) { background: #efe1ff; }"
-      "QTabBar::tab:nth-of-type(4) { background: #dff3d3; }"
-      "QTabBar::tab:nth-of-type(5) { background: #ffe4c2; }"
-      "QTabBar::tab:nth-of-type(6) { background: #f4e3cf; }"
-      "QTabBar::tab:selected { border-bottom: 3px solid #172033; }"
-    );
 
-    tabs->addTab(placeholderTab("Receiver status will appear here.", "#ecfbf2"), "Status");
+    tabs->addTab(placeholderTab("Receiver status will appear here.", "#101f18"), "Status");
     tabs->addTab(new ProcessTab(process), "Processes");
-    tabs->addTab(placeholderTab("Stats monitor will appear here.", "#f7edff"), "Monitor");
+    tabs->addTab(placeholderTab("Stats monitor will appear here.", "#1d162a"), "Monitor");
     tabs->addTab(new CatalogTab, "Catalog");
     tabs->addTab(new LogsTab(process), "Logs");
-    tabs->addTab(placeholderTab("Station settings will appear here.", "#fbf0df"), "Settings");
+    tabs->addTab(placeholderTab("Station settings will appear here.", "#211b14"), "Settings");
 
     setCentralWidget(tabs);
   }
@@ -420,6 +477,8 @@ public:
 int main(int argc, char** argv) {
   QApplication app(argc, argv);
   app.setApplicationName("goestools-station");
+  applyDarkPalette(app);
+  app.setStyleSheet(darkStyleSheet());
   MainWindow window;
   window.show();
   return app.exec();

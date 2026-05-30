@@ -6,3 +6,7 @@ Guides
 
    guides/minimal_receiver
    guides/circonus
+   guides/services
+   guides/wsl-ubuntu
+   guides/docker-ubuntu
+   guides/smoke-build

@@ -1,18 +1,14 @@
-# Sample services for Raspberry Pi
+# Legacy system service examples
 
-Those two service files can be installed on a Raspberry Pi and will automatically start/restart both goesrecv and goesproc at boot time.
+Canonical service documentation lives in:
 
-By default they will use configuration files in /home/pi and save incoming data in /home/pi/incoming, but you can of course adjust those before installing the services.
+```text
+docs/guides/services.rst
+```
 
-## How to install
+The files in this directory are legacy Raspberry Pi/system-wide service
+examples that assume paths such as `/home/pi` and installation under
+`/etc/systemd/system`.
 
-After editing them to adjust paths if necessary, copy both service files to `/etc/systemd/system`. Make sure the configuration files exist, and the `incoming` directory is created at the location referenced in the service description file.
-
-You should then test if the service starts properly by using `sudo systemctl start goesrecv.service`  and `sudo systemctl start goesproc.service`.
-
-If all goes well, then you can simply enable the services so that they run at boot time:
-
-`
-sudo systemctl enable goesrecv.service
-sudo systemctl enable goesproc.service
-`
+For new setups, prefer the user-service examples under `systemd/examples/` and
+follow `docs/guides/services.rst`.
