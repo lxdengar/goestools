@@ -1,0 +1,5 @@
+<RCC>
+  <qresource prefix="/goestools-station">
+    <file alias="icon.png">../../../images/goestools-station.png</file>
+  </qresource>
+</RCC>

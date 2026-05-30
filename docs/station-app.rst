@@ -5,6 +5,10 @@ goestools Station App Plan
 the existing command-line tools rather than replacing receiver or decoder
 internals.
 
+.. image:: ../images/goestools-station.png
+   :alt: goestools Station application icon
+   :width: 180px
+
 Goals
 -----
 

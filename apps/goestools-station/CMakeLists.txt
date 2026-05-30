@@ -1,6 +1,7 @@
 find_package(Qt6 REQUIRED COMPONENTS Widgets)
 
 add_executable(goestools-station
+  resources/goestools-station.qrc
   src/managed_process.cpp
   src/managed_process.h
   src/product_catalog_model.cpp
@@ -11,6 +12,7 @@ add_executable(goestools-station
 
 set_target_properties(goestools-station PROPERTIES
   AUTOMOC ON
+  AUTORCC ON
   CXX_STANDARD 17
   CXX_STANDARD_REQUIRED ON
   CXX_EXTENSIONS OFF)

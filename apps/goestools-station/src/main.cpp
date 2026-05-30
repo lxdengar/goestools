@@ -4,6 +4,7 @@
 #include <QDateTime>
 #include <QHeaderView>
 #include <QHBoxLayout>
+#include <QIcon>
 #include <QLabel>
 #include <QLineEdit>
 #include <QMainWindow>
@@ -455,6 +456,7 @@ class MainWindow : public QMainWindow {
 public:
   MainWindow() {
     setWindowTitle("goestools Station");
+    setWindowIcon(QIcon(":/goestools-station/icon.png"));
     resize(1000, 700);
 
     auto* process = new ManagedProcess(this);
@@ -477,6 +479,7 @@ public:
 int main(int argc, char** argv) {
   QApplication app(argc, argv);
   app.setApplicationName("goestools-station");
+  app.setWindowIcon(QIcon(":/goestools-station/icon.png"));
   applyDarkPalette(app);
   app.setStyleSheet(darkStyleSheet());
   MainWindow window;
