@@ -15,5 +15,6 @@ Build and platform notes are now consolidated under:
 - `docs/guides/smoke-build.rst`
 - `docs/development/build-notes.rst`
 - `docs/development/modernization-log.rst`
+- `docs/development/ubuntu-modernization-notes.rst`
 
 This file remains as a root-level pointer for older references.
