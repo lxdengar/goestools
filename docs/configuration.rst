@@ -70,4 +70,4 @@ The default stats endpoints are:
    [decoder.stats_publisher]
    bind = "tcp://0.0.0.0:6002"
 
-See :doc:`stats-interface` and :doc:`station-monitoring` for payload details.
+See :doc:`stats-interface` and :doc:`station/monitoring` for payload details.

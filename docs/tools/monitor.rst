@@ -28,4 +28,4 @@ Pretty output:
 
    python3 tools/monitor/stats_subscriber.py tcp://127.0.0.1:6001 --pretty
 
-See also :doc:`../stats-interface` and :doc:`../station-monitoring`.
+See also :doc:`../stats-interface` and :doc:`../station/monitoring`.

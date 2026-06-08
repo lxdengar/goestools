@@ -9,3 +9,5 @@ Developer and modernization notes are collected here.
    development/build-notes
    development/modernization-log
    development/contributor-guidance
+   development/hackrf-support-plan
+   development/airspy-r2-support-note

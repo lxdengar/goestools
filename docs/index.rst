@@ -20,8 +20,6 @@ Welcome to goestools's documentation!
    development
    receiver-pipeline
    stats-interface
-   station-monitoring
-   station-app
    resources
 
 
