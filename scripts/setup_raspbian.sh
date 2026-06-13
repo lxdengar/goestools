@@ -5,6 +5,27 @@
 
 set -e
 
+if [ "${GOESTOOLS_LEGACY_RASPBIAN_XCOMPILE:-}" != "1" ]; then
+    cat >&2 <<'EOF'
+scripts/setup_raspbian.sh is a legacy cross-compilation helper.
+
+It targets old Raspbian Stretch-era packages and Ubuntu 18.04 cross compiler
+packages such as gcc-5-arm-linux-gnueabihf. Those packages are not available
+on modern Raspberry Pi OS or current Ubuntu releases.
+
+If you are building directly on a Raspberry Pi, do not run this script. Use:
+
+  scripts/build_wsl.sh
+
+or the normal out-of-tree CMake build documented in docs/guides/raspberry-pi.rst.
+
+To run the legacy cross-compilation setup anyway, set:
+
+  GOESTOOLS_LEGACY_RASPBIAN_XCOMPILE=1 scripts/setup_raspbian.sh
+EOF
+    exit 1
+fi
+
 target_dir="xcompile/raspbian"
 mkdir -p "${target_dir}"
 cp -f "$(dirname "$0")/files/raspberrypi.cmake" "${target_dir}"

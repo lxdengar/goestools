@@ -15,6 +15,7 @@ repo_dir=$(CDPATH= cd -- "${script_dir}/.." && pwd)
 install_prefix=${CMAKE_INSTALL_PREFIX:-/usr/local}
 build_type=${CMAKE_BUILD_TYPE:-}
 jobs=${JOBS:-}
+use_system_libaec=${GOESTOOLS_USE_SYSTEM_LIBAEC:-}
 
 missing=
 
@@ -78,6 +79,24 @@ policy_minimum=${CMAKE_POLICY_VERSION_MINIMUM:-3.5}
 
 configure_args="-DCMAKE_INSTALL_PREFIX=${install_prefix}"
 configure_args="${configure_args} -DCMAKE_POLICY_VERSION_MINIMUM=${policy_minimum}"
+cmake_version=$(cmake --version | awk 'NR == 1 {print $3}')
+if [ -z "${use_system_libaec}" ]; then
+    case "$(printf '%s\n%s\n' "3.26" "${cmake_version}" | sort -V | head -n 1)" in
+        "${cmake_version}")
+            if [ "${cmake_version}" != "3.26" ]; then
+                use_system_libaec=ON
+                echo "CMake ${cmake_version} is older than vendored libaec requires; using system libaec."
+                echo "If configure fails, install libaec-dev and rerun this script."
+            else
+                use_system_libaec=OFF
+            fi
+            ;;
+        *)
+            use_system_libaec=OFF
+            ;;
+    esac
+fi
+configure_args="${configure_args} -DGOESTOOLS_USE_SYSTEM_LIBAEC=${use_system_libaec}"
 if [ -n "${build_type}" ]; then
     configure_args="${configure_args} -DCMAKE_BUILD_TYPE=${build_type}"
 fi

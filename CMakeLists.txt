@@ -51,8 +51,36 @@ endif()
 find_package(Threads REQUIRED)
 find_package(ZLIB REQUIRED)
 
-# Force static build of libaec
-set(BUILD_SHARED_LIBS OFF CACHE INTERNAL "" FORCE)
+option(GOESTOOLS_USE_SYSTEM_LIBAEC "Use system libaec instead of vendored libaec" OFF)
+
+if(GOESTOOLS_USE_SYSTEM_LIBAEC)
+  find_path(LIBAEC_INCLUDE_DIR szlib.h)
+  find_library(LIBAEC_AEC_LIBRARY NAMES aec)
+  find_library(LIBAEC_SZ_LIBRARY NAMES sz)
+
+  if(NOT LIBAEC_INCLUDE_DIR OR NOT LIBAEC_AEC_LIBRARY OR NOT LIBAEC_SZ_LIBRARY)
+    message(FATAL_ERROR
+      "GOESTOOLS_USE_SYSTEM_LIBAEC=ON requires libaec development files. "
+      "On Debian/Ubuntu/Raspberry Pi OS install: sudo apt install libaec-dev")
+  endif()
+
+  add_library(libaec::aec UNKNOWN IMPORTED)
+  set_target_properties(libaec::aec PROPERTIES
+    IMPORTED_LOCATION "${LIBAEC_AEC_LIBRARY}")
+
+  add_library(libaec::sz UNKNOWN IMPORTED)
+  set_target_properties(libaec::sz PROPERTIES
+    IMPORTED_LOCATION "${LIBAEC_SZ_LIBRARY}")
+
+  include_directories(BEFORE SYSTEM ${LIBAEC_INCLUDE_DIR})
+else()
+  # Force static build of vendored libaec
+  set(BUILD_SHARED_LIBS OFF CACHE INTERNAL "" FORCE)
+  add_subdirectory(vendor/libaec EXCLUDE_FROM_ALL)
+  include_directories(BEFORE SYSTEM ${PROJECT_BINARY_DIR}/vendor/libaec/include)
+  include_directories(BEFORE SYSTEM ${PROJECT_SOURCE_DIR}/vendor/libaec/include)
+  include_directories(BEFORE SYSTEM ${PROJECT_SOURCE_DIR}/vendor/libaec/src)
+endif()
 
 # Set a default build type if none was specified
 set(default_build_type "RelWithDebInfo")
@@ -73,7 +101,6 @@ if("${CMAKE_BUILD_TYPE}" EQUAL "Release")
 endif()
 
 add_subdirectory(vendor/libcorrect EXCLUDE_FROM_ALL)
-add_subdirectory(vendor/libaec EXCLUDE_FROM_ALL)
 add_subdirectory(vendor/json EXCLUDE_FROM_ALL)
 
 # Build nanomsg
@@ -95,9 +122,6 @@ execute_process(COMMAND
 
 include_directories(BEFORE SYSTEM ${PROJECT_BINARY_DIR}/include)
 include_directories(BEFORE SYSTEM ${PROJECT_SOURCE_DIR}/vendor/libcorrect/include)
-include_directories(BEFORE SYSTEM ${PROJECT_BINARY_DIR}/vendor/libaec/include)
-include_directories(BEFORE SYSTEM ${PROJECT_SOURCE_DIR}/vendor/libaec/include)
-include_directories(BEFORE SYSTEM ${PROJECT_SOURCE_DIR}/vendor/libaec/src)
 include_directories(BEFORE SYSTEM ${PROJECT_SOURCE_DIR}/vendor/tinytoml/include)
 include_directories(${PROJECT_SOURCE_DIR}/src)
 

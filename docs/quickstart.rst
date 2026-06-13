@@ -42,6 +42,7 @@ Install the common build dependencies:
      cmake \
      git-core \
      pkg-config \
+     libaec-dev \
      libopencv-dev \
      libproj-dev \
      zlib1g-dev
@@ -93,7 +94,7 @@ Build
 -----
 
 For Ubuntu and WSL, the recommended build entry point is the helper script from
-the repository root:
+the repository root. It can also be used for native Raspberry Pi builds:
 
 .. code-block:: sh
 
@@ -101,6 +102,13 @@ the repository root:
 
 The helper checks required tools, creates or reuses ``build/``, configures
 CMake, and builds with the detected CPU count. It does not install packages.
+On systems with CMake older than 3.26, such as Raspberry Pi OS Bullseye, it
+automatically uses the distro ``libaec-dev`` package instead of the vendored
+``libaec`` submodule.
+
+For Raspberry Pi-specific notes, including why not to run the legacy
+``scripts/setup_raspbian.sh`` cross-compilation helper, see
+:doc:`guides/raspberry-pi`.
 
 Use an out-of-tree build:
 

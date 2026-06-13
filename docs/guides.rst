@@ -8,5 +8,6 @@ Guides
    guides/circonus
    guides/services
    guides/wsl-ubuntu
+   guides/raspberry-pi
    guides/docker-ubuntu
    guides/smoke-build

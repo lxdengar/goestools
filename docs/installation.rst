@@ -24,6 +24,7 @@ System dependencies:
 
 * CMake
 * C++14 compiler
+* libaec
 * OpenCV (for image processing in goesproc)
 * zlib (for decompressing EMWIN data)
 
@@ -66,6 +67,10 @@ Install dependencies as described in :doc:`quickstart`, then run:
 ``build/``. ``scripts/smoke_build.sh`` performs a separate non-destructive
 verification build in a temporary directory.
 
+For native Raspberry Pi builds, use the same modern branch and see
+:doc:`guides/raspberry-pi`. The legacy ``scripts/setup_raspbian.sh`` helper is
+only for old cross-compilation workflows and is not the normal Pi build path.
+
 Manual Build
 ------------
 
@@ -79,6 +84,7 @@ Install system dependencies:
     build-essential \
     cmake \
     git-core \
+    libaec-dev \
     libopencv-dev \
     libproj-dev \
     zlib1g-dev
