@@ -53,8 +53,10 @@ int Header::readFrom(const char* buf, size_t len) {
   {
     constexpr unsigned n = 8;
     ASSERT((len - nread) >= 8);
-    auto rv = sscanf(buf + nread, "%08lx", &address);
+    unsigned long long parsedAddress = 0;
+    auto rv = sscanf(buf + nread, "%08llx", &parsedAddress);
     ASSERT(rv == 1);
+    address = parsedAddress;
     nread += n;
   }
 

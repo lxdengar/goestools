@@ -158,7 +158,7 @@ public:
 protected:
   const Buffer& b_;
   int p_;
-  H h_;
+  H h_ = {};
 };
 
 template <>
