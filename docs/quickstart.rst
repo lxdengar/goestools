@@ -4,6 +4,31 @@ Quickstart
 This page is the canonical path for getting ``goestools`` installed, built,
 verified, and running on a Linux receiver host.
 
+Which Repository?
+-----------------
+
+Use this modernized fork for the WSL/Ubuntu build helpers, smoke build,
+consolidated docs, prototype tools, and optional station GUI:
+
+.. code-block:: text
+
+   https://github.com/lxdengar/goestools
+
+The original upstream project is:
+
+.. code-block:: text
+
+   https://github.com/pietern/goestools
+
+Use upstream if you specifically need the original project state. Use this fork
+for the build flow documented here.
+
+.. important::
+
+   The modernized build helpers currently live on the ``modern-wsl-build``
+   branch. If you clone the repository's default ``main`` branch, files such as
+   ``scripts/build_wsl.sh`` and ``scripts/smoke_build.sh`` may be missing.
+
 Install Dependencies
 --------------------
 
@@ -43,17 +68,39 @@ For a fresh checkout:
 
 .. code-block:: sh
 
-   git clone --recursive https://github.com/pietern/goestools
+   git clone --recursive --branch modern-wsl-build https://github.com/lxdengar/goestools
    cd goestools
 
 For an existing checkout:
 
 .. code-block:: sh
 
+   git fetch origin
+   git switch modern-wsl-build
    git submodule update --init --recursive
+
+Verify that you are on the modern branch and have the helper scripts:
+
+.. code-block:: sh
+
+   git branch --show-current
+   ls -la scripts/build_wsl.sh scripts/smoke_build.sh
+
+If ``git branch --show-current`` prints ``main`` or the scripts are missing,
+switch to ``modern-wsl-build`` before following the rest of this guide.
 
 Build
 -----
+
+For Ubuntu and WSL, the recommended build entry point is the helper script from
+the repository root:
+
+.. code-block:: sh
+
+   scripts/build_wsl.sh
+
+The helper checks required tools, creates or reuses ``build/``, configures
+CMake, and builds with the detected CPU count. It does not install packages.
 
 Use an out-of-tree build:
 
@@ -63,12 +110,6 @@ Use an out-of-tree build:
    cd build
    cmake .. -DCMAKE_INSTALL_PREFIX=/usr/local
    cmake --build . -j"$(nproc)"
-
-From the repository root, the WSL/Ubuntu helper runs the same normal build:
-
-.. code-block:: sh
-
-   scripts/build_wsl.sh
 
 Verify A Clean Build
 --------------------

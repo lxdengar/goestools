@@ -3,7 +3,10 @@
 Installation
 ============
 
-Building goestools requires Linux.
+Building ``goestools`` requires Linux. For current Ubuntu and WSL setup, start
+with :doc:`quickstart`; that page includes the modern fork URL, dependency
+packages, helper scripts, smoke build, receiver configuration, services, and
+the optional station GUI.
 
 It can be built for x86 and ARM (with NEON).
 
@@ -32,8 +35,39 @@ Bundled dependencies (see vendor directory in repository):
 * json
 * tinytoml
 
-Building
---------
+Modern Ubuntu/WSL Build
+-----------------------
+
+Use this repository for the modernized Ubuntu/WSL build path:
+
+.. code-block:: sh
+
+  git clone --recursive --branch modern-wsl-build https://github.com/lxdengar/goestools
+  cd goestools
+
+The modern helper scripts are on the ``modern-wsl-build`` branch. If you
+already cloned ``main`` and do not see ``scripts/build_wsl.sh``, switch
+branches:
+
+.. code-block:: sh
+
+  git fetch origin
+  git switch modern-wsl-build
+  git submodule update --init --recursive
+
+Install dependencies as described in :doc:`quickstart`, then run:
+
+.. code-block:: sh
+
+  scripts/build_wsl.sh
+  scripts/smoke_build.sh
+
+``scripts/build_wsl.sh`` performs the normal out-of-tree CMake build in
+``build/``. ``scripts/smoke_build.sh`` performs a separate non-destructive
+verification build in a temporary directory.
+
+Manual Build
+------------
 
 These instructions should work for both Ubuntu and Raspbian.
 
@@ -53,16 +87,31 @@ If you want to run goesrecv on this machine, you also have to install
 the development packages of the drivers the SDRs you want to use;
 ``librtlsdr-dev`` for an RTL-SDR, ``libairspy-dev`` for an Airspy.
 
-Now you can build and install goestools:
+Now you can build ``goestools`` manually:
 
 .. code-block:: text
 
-  git clone --recursive https://github.com/pietern/goestools
-  cd goestools
   mkdir build
   cd build
   cmake .. -DCMAKE_INSTALL_PREFIX=/usr/local
   make
+
+Install system-wide only when you intentionally want root-managed binaries:
+
+.. code-block:: text
+
   make install
 
 The goestools executables are now available in /usr/local/bin.
+
+Original Upstream
+-----------------
+
+The original upstream repository is:
+
+.. code-block:: text
+
+  https://github.com/pietern/goestools
+
+Use the upstream repository if you specifically need the original project
+state. Use this fork for the WSL/Ubuntu helper scripts and current docs.
