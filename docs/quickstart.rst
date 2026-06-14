@@ -7,7 +7,7 @@ verified, and running on a Linux receiver host.
 Which Repository?
 -----------------
 
-Use this modernized fork for the WSL/Ubuntu build helpers, smoke build,
+Use this modernized fork for the native Linux build helper, smoke build,
 consolidated docs, prototype tools, and optional station GUI:
 
 .. code-block:: text
@@ -27,7 +27,7 @@ for the build flow documented here.
 
    The modernized build helpers currently live on the ``modern-wsl-build``
    branch. If you clone the repository's default ``main`` branch, files such as
-   ``scripts/build_wsl.sh`` and ``scripts/smoke_build.sh`` may be missing.
+   ``scripts/modern_build.sh`` and ``scripts/smoke_build.sh`` may be missing.
 
 Install Dependencies
 --------------------
@@ -85,7 +85,7 @@ Verify that you are on the modern branch and have the helper scripts:
 .. code-block:: sh
 
    git branch --show-current
-   ls -la scripts/build_wsl.sh scripts/smoke_build.sh
+   ls -la scripts/modern_build.sh scripts/smoke_build.sh
 
 If ``git branch --show-current`` prints ``main`` or the scripts are missing,
 switch to ``modern-wsl-build`` before following the rest of this guide.
@@ -93,12 +93,12 @@ switch to ``modern-wsl-build`` before following the rest of this guide.
 Build
 -----
 
-For Ubuntu and WSL, the recommended build entry point is the helper script from
-the repository root. It can also be used for native Raspberry Pi builds:
+For Ubuntu, WSL, and native Raspberry Pi builds, the recommended build entry
+point is the helper script from the repository root:
 
 .. code-block:: sh
 
-   scripts/build_wsl.sh
+   scripts/modern_build.sh
 
 The helper checks required tools, creates or reuses ``build/``, configures
 CMake, and builds with the detected CPU count. It does not install packages.

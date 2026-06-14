@@ -39,7 +39,7 @@ Clone the modern branch:
    git clone --recursive --branch modern-wsl-build https://github.com/lxdengar/goestools
    cd goestools
 
-If you already cloned ``main`` and do not see ``scripts/build_wsl.sh``, switch
+If you already cloned ``main`` and do not see ``scripts/modern_build.sh``, switch
 to the modern branch:
 
 .. code-block:: sh
@@ -52,11 +52,11 @@ Build:
 
 .. code-block:: sh
 
-   scripts/build_wsl.sh
+   scripts/modern_build.sh
 
-Despite the name, ``scripts/build_wsl.sh`` is a generic native Linux build
-helper. It checks for required tools, configures ``build/``, and runs the CMake
-build with the detected CPU count.
+``scripts/modern_build.sh`` is a generic native Linux build helper. It checks
+for required tools, configures ``build/``, and runs the CMake build with the
+detected CPU count.
 
 CMake And libaec
 ----------------
@@ -81,7 +81,7 @@ Then rerun:
 
 .. code-block:: sh
 
-   scripts/build_wsl.sh
+   scripts/modern_build.sh
 
 Manual Build
 ------------

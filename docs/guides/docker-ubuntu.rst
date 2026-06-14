@@ -13,7 +13,7 @@ Run a build by mounting the checkout:
 
    docker run --rm -v "$PWD":/workspace -w /workspace goestools-ubuntu-dev
 
-The container default command runs ``scripts/build_wsl.sh``. Initialize
+The container default command runs ``scripts/modern_build.sh``. Initialize
 submodules in the checkout before using the container:
 
 .. code-block:: sh

@@ -1,6 +1,7 @@
 #!/bin/sh
 #
-# Configure and build goestools on Ubuntu/WSL without installing packages.
+# Configure and build goestools on modern native Linux systems without
+# installing packages.
 #
 
 set -eu

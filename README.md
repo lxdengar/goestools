@@ -2,6 +2,18 @@
 
 Tools to receive, decode, assemble, and process GOES satellite data.
 
+This fork is the modernized build and operator-tooling branch of the original
+`pietern/goestools` project. It keeps the receiver and decoder behavior intact
+while adding current Ubuntu/WSL/Raspberry Pi build guidance, helper scripts,
+consolidated Sphinx documentation, service examples, prototype monitoring and
+catalog tools, and the optional `goestools-station` Qt dashboard. Use the
+original upstream repository if you specifically need the historical project
+state; use this fork for the documented modern Linux build flow.
+
+The original project was created by Pieter Noordhuis. This fork claims no
+ownership or additional rights over the original project; it is made available
+to all under the repository's existing license.
+
 The main executables are:
 
 - `goesrecv`: demodulate and decode a signal into a packet stream.

@@ -6,7 +6,7 @@
 #   docker run --rm -v "$PWD":/workspace -w /workspace goestools-ubuntu-dev
 #
 # The default command performs an out-of-tree build in ./build using
-# scripts/build_wsl.sh. Initialize submodules in the checkout first if they are
+# scripts/modern_build.sh. Initialize submodules in the checkout first if they are
 # not already populated:
 #
 #   git submodule update --init --recursive
@@ -29,4 +29,4 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 
 WORKDIR /workspace
 
-CMD ["scripts/build_wsl.sh"]
+CMD ["scripts/modern_build.sh"]

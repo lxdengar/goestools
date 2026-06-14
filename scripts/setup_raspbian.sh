@@ -15,7 +15,7 @@ on modern Raspberry Pi OS or current Ubuntu releases.
 
 If you are building directly on a Raspberry Pi, do not run this script. Use:
 
-  scripts/build_wsl.sh
+  scripts/modern_build.sh
 
 or the normal out-of-tree CMake build documented in docs/guides/raspberry-pi.rst.
 

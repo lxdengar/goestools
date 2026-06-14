@@ -36,10 +36,11 @@ Bundled dependencies (see vendor directory in repository):
 * json
 * tinytoml
 
-Modern Ubuntu/WSL Build
------------------------
+Modern Linux Build
+------------------
 
-Use this repository for the modernized Ubuntu/WSL build path:
+Use this repository for the modernized Ubuntu, WSL, and native Raspberry Pi
+build path:
 
 .. code-block:: sh
 
@@ -47,7 +48,7 @@ Use this repository for the modernized Ubuntu/WSL build path:
   cd goestools
 
 The modern helper scripts are on the ``modern-wsl-build`` branch. If you
-already cloned ``main`` and do not see ``scripts/build_wsl.sh``, switch
+already cloned ``main`` and do not see ``scripts/modern_build.sh``, switch
 branches:
 
 .. code-block:: sh
@@ -60,10 +61,10 @@ Install dependencies as described in :doc:`quickstart`, then run:
 
 .. code-block:: sh
 
-  scripts/build_wsl.sh
+  scripts/modern_build.sh
   scripts/smoke_build.sh
 
-``scripts/build_wsl.sh`` performs the normal out-of-tree CMake build in
+``scripts/modern_build.sh`` performs the normal out-of-tree CMake build in
 ``build/``. ``scripts/smoke_build.sh`` performs a separate non-destructive
 verification build in a temporary directory.
 

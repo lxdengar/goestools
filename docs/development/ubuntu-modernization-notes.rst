@@ -21,8 +21,8 @@ Changed:
   ``libaec::aec``/``libaec::sz``.
 - ``src/goesrecv/packet_publisher.h``: fixed the pre-existing bad include by
   using ``<cstdint>``, which was necessary to compile.
-- ``scripts/build_wsl.sh``: added a repeatable WSL/Ubuntu build helper that
-  checks for required tools and runs the out-of-tree CMake build without
+- ``scripts/modern_build.sh``: added a repeatable native Linux build helper
+  that checks for required tools and runs the out-of-tree CMake build without
   installing packages.
 - ``docker/Dockerfile.ubuntu-dev``: added a minimal Ubuntu development image
   that can build the project from a mounted source checkout.
@@ -36,7 +36,7 @@ Verification:
 - Step 3 ``ZLIB::ZLIB`` configure/build passed.
 - Final executable check passed for ``goesrecv``, ``goeslrit``, ``goesproc``,
   and ``goespackets``.
-- ``scripts/build_wsl.sh`` configure/build passed using the existing build
+- ``scripts/modern_build.sh`` configure/build passed using the existing build
   tree.
 - Dockerfile syntax/configuration was reviewed; build verification depends on
   Docker daemon availability.
@@ -55,14 +55,14 @@ Notes:
 - OpenCV emits system-header warnings during compilation.
 - Neither warning class blocks the build.
 
-WSL Build Helper
-----------------
+Modern Build Helper
+-------------------
 
 Use the helper from the repository root:
 
 .. code-block:: sh
 
-   scripts/build_wsl.sh
+   scripts/modern_build.sh
 
 The script installs no packages. It checks for ``cmake``, ``git``,
 ``pkg-config``, ``make``, a C compiler, and a C++ compiler. It then creates or
@@ -74,8 +74,8 @@ Optional overrides:
 
 .. code-block:: sh
 
-   BUILD_DIR=build-debug CMAKE_BUILD_TYPE=Debug scripts/build_wsl.sh
-   CMAKE_INSTALL_PREFIX=/opt/goestools scripts/build_wsl.sh
+   BUILD_DIR=build-debug CMAKE_BUILD_TYPE=Debug scripts/modern_build.sh
+   CMAKE_INSTALL_PREFIX=/opt/goestools scripts/modern_build.sh
 
 The script is safe to run repeatedly after source changes or after a successful
 build.
@@ -95,7 +95,7 @@ Run the project build by mounting the checkout:
 
    docker run --rm -v "$PWD":/workspace -w /workspace goestools-ubuntu-dev
 
-The image default command runs ``scripts/build_wsl.sh``, which checks
+The image default command runs ``scripts/modern_build.sh``, which checks
 prerequisites, creates or reuses ``build/``, configures CMake, and builds with
 the detected CPU count. Initialize submodules in the checkout before running
 the container if they are not already populated:

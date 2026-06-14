@@ -45,14 +45,14 @@ Branch Check
 ------------
 
 The modern WSL/Ubuntu helper scripts are on the ``modern-wsl-build`` branch.
-If a checkout is on ``main``, ``scripts/build_wsl.sh`` may not exist.
+If a checkout is on ``main``, ``scripts/modern_build.sh`` may not exist.
 
 Check the current branch and scripts:
 
 .. code-block:: sh
 
    git branch --show-current
-   ls -la scripts/build_wsl.sh scripts/smoke_build.sh
+   ls -la scripts/modern_build.sh scripts/smoke_build.sh
 
 If needed, switch branches and initialize submodules:
 
@@ -69,7 +69,7 @@ From the repository root:
 
 .. code-block:: sh
 
-   scripts/build_wsl.sh
+   scripts/modern_build.sh
 
 The helper:
 
@@ -83,8 +83,8 @@ Optional overrides:
 
 .. code-block:: sh
 
-   BUILD_DIR=build-debug CMAKE_BUILD_TYPE=Debug scripts/build_wsl.sh
-   CMAKE_INSTALL_PREFIX=/opt/goestools scripts/build_wsl.sh
+   BUILD_DIR=build-debug CMAKE_BUILD_TYPE=Debug scripts/modern_build.sh
+   CMAKE_INSTALL_PREFIX=/opt/goestools scripts/modern_build.sh
 
 WSL2 Notes
 ----------
