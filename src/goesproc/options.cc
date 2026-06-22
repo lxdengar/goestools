@@ -25,6 +25,10 @@ void usage(int argc, char** argv) {
   fprintf(stderr, "                             (implies --mode packet)\n");
   fprintf(stderr, "  -f  --force                Overwrite existing output files\n");
   fprintf(stderr, "      --out DIR              Output directory\n");
+  fprintf(stderr, "      --log-level LEVEL      quiet, error, warning, info, or debug\n");
+  fprintf(stderr, "      --log-format FORMAT    text or json\n");
+  fprintf(stderr, "      --summary-interval SEC Periodic summary interval (0 disables)\n");
+  fprintf(stderr, "      --no-progress          Disable interactive packet progress\n");
   fprintf(stderr, "\n");
   fprintf(stderr, "Other:\n");
   fprintf(stderr, "      --help     Display this help and exit\n");
@@ -62,6 +66,10 @@ Options parseOptions(int& argc, char**& argv) {
       {"subscribe", required_argument, nullptr, 0x1001},
       {"force",     no_argument,       nullptr, 'f'},
       {"out",       required_argument, nullptr, 0x1003},
+      {"log-level", required_argument, nullptr, 0x1004},
+      {"log-format", required_argument, nullptr, 0x1005},
+      {"summary-interval", required_argument, nullptr, 0x1006},
+      {"no-progress", no_argument, nullptr, 0x1007},
       {"help",      no_argument,       nullptr, 0x1337},
       {"version",   no_argument,       nullptr, 0x1338},
       {nullptr,     0,                 nullptr, 0},
@@ -104,6 +112,32 @@ Options parseOptions(int& argc, char**& argv) {
       break;
     case 0x1003: // --out
       opts.out = optarg;
+      break;
+    case 0x1004:
+      if (!parseLogLevel(optarg, &opts.logLevel)) {
+        fprintf(stderr, "%s: invalid log level '%s'\n", argv[0], optarg);
+        exit(1);
+      }
+      break;
+    case 0x1005:
+      if (!parseLogFormat(optarg, &opts.logFormat)) {
+        fprintf(stderr, "%s: invalid log format '%s'\n", argv[0], optarg);
+        exit(1);
+      }
+      break;
+    case 0x1006:
+      {
+        char* end = nullptr;
+        auto value = strtoul(optarg, &end, 10);
+        if (end == optarg || *end != '\0') {
+          fprintf(stderr, "%s: invalid summary interval '%s'\n", argv[0], optarg);
+          exit(1);
+        }
+        opts.summaryInterval = static_cast<unsigned>(value);
+      }
+      break;
+    case 0x1007:
+      opts.progress = false;
       break;
     case 0x1337:
       usage(argc, argv);

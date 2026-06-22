@@ -3,6 +3,8 @@
 #include <string>
 #include <vector>
 
+#include "log.h"
+
 enum class ProcessMode {
   UNDEFINED,
   PACKET,
@@ -24,6 +26,11 @@ struct Options {
 
   // Output directory
   std::string out = ".";
+
+  LogLevel logLevel = LogLevel::INFO;
+  LogFormat logFormat = LogFormat::TEXT;
+  unsigned summaryInterval = 60;
+  bool progress = true;
 
   // Paths specified as final argument(s)
   std::vector<std::string> paths;

@@ -7,8 +7,11 @@
 #include "lib/dir.h"
 #include "lrit/file.h"
 
-LRITProcessor::LRITProcessor(std::vector<std::unique_ptr<Handler> > handlers)
-    : handlers_(std::move(handlers)) {
+LRITProcessor::LRITProcessor(
+    std::vector<std::unique_ptr<Handler> > handlers,
+    const std::shared_ptr<Logger>& logger)
+  : handlers_(std::move(handlers)),
+    logger_(logger) {
 }
 
 void LRITProcessor::run(int argc, char** argv) {
@@ -53,9 +56,17 @@ void LRITProcessor::run(int argc, char** argv) {
     });
 
   // Process files in chronological order
+  bool firstFile = true;
   for (const auto& file : files) {
+    if (firstFile) {
+      logger_->event(LogLevel::INFO, "input_active");
+      firstFile = false;
+    }
+    logger_->increment("lrit");
     for (auto& handler : handlers_) {
       handler->handle(file);
     }
+    logger_->tick();
   }
+  logger_->summary(true);
 }

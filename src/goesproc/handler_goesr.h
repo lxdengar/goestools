@@ -69,6 +69,32 @@ public:
     return channel_;
   }
 
+  const std::string& getSatellite() const {
+    return satellite_;
+  }
+
+  int getSatelliteID() const {
+    return satelliteID_;
+  }
+
+  size_t receivedSegments() const {
+    return files_.size();
+  }
+
+  uint16_t expectedSegments() const {
+    if (!isSegmented()) {
+      return 1;
+    }
+    return getHeader<lrit::SegmentIdentificationHeader>().maxSegment;
+  }
+
+  uint16_t currentSegment() const {
+    if (!isSegmented()) {
+      return 1;
+    }
+    return getHeader<lrit::SegmentIdentificationHeader>().segmentNumber;
+  }
+
 protected:
   std::vector<std::shared_ptr<const lrit::File>> files_;
 

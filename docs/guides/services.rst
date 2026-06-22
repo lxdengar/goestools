@@ -81,3 +81,13 @@ View service logs with:
 
    journalctl --user -u goesrecv.service -f
    journalctl --user -u goesproc.service -f
+
+``goesproc`` text logs are one event per line when run without a terminal, so
+they work directly with journald. To emit machine-readable JSON Lines, add
+``--log-format json`` to its ``ExecStart`` command. The default 60-second
+summary can be changed with ``--summary-interval SEC`` or disabled with
+``--summary-interval 0``.
+
+The interactive packet progress line is automatically disabled for a systemd
+service. ``--no-progress`` can be added explicitly when a unit is also used
+from a terminal.

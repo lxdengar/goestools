@@ -14,6 +14,11 @@ Options
                                    or pre-assembled LRIT files
 ``--subscribe ADDR``               Address of nanomsg publisher
 ``-f``, ``--force``                Overwrite existing output files
+``--log-level LEVEL``              Logging threshold: ``quiet``, ``error``,
+                                   ``warning``, ``info``, or ``debug``
+``--log-format FORMAT``            ``text`` or newline-delimited ``json``
+``--summary-interval SEC``         Summary interval; ``0`` disables summaries
+``--no-progress``                  Disable interactive VCDU progress
 ================================   ==========================================
 
 If mode is set to ``packet``, goesproc reads VCDU packets from the
@@ -95,6 +100,38 @@ following ImageMagick_ commands:
 And get:
 
 .. image:: /images/GOES15_FD_VS_20170821.gif
+
+Logging Output
+==============
+
+The default text log identifies the active configuration and input, detected
+GOES-R spacecraft, completed or incomplete products, false-color pairing, VCDU
+counter gaps, and output files. A typical product event looks like:
+
+.. code-block:: text
+
+   2026-06-21T18:42:10.000Z INFO product_complete channel=CH13 expected_segments=10 frame_time=2026-06-21T18:40:00Z product=CMIP received_segments=10 region=FD spacecraft=G18 spacecraft_id=18 segmented=true
+
+Use JSON Lines output for the station app or another monitor:
+
+.. code-block:: sh
+
+   goesproc \
+     -c ~/goesproc.conf \
+     --subscribe tcp://127.0.0.1:5004 \
+     --log-format json \
+     --summary-interval 60 \
+     --out ~/goes-data
+
+Each line is a complete JSON object with stable ``timestamp``, ``level``, and
+``event`` fields. JSON mode disables the interactive carriage-return progress
+line. Warnings and errors are written to standard error; capture both streams
+when collecting a complete event log.
+
+At the default ``info`` level, routine handler mismatches and individual image
+segments are suppressed. Use ``--log-level debug`` for segment and
+false-color waiting details. ``--log-level quiet`` suppresses routine output
+but still reports fatal errors.
 
 Sample configuration
 ====================

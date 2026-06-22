@@ -6,8 +6,8 @@
 
 namespace assembler {
 
-VirtualChannel::VirtualChannel(int id)
-  : id_(id), n_(-1) {
+VirtualChannel::VirtualChannel(int id, VCDUGapCallback gapCallback)
+  : id_(id), n_(-1), gapCallback_(std::move(gapCallback)) {
 }
 
 // Combine virtual VirtualChannel packets into transport PDUs.
@@ -22,13 +22,17 @@ std::vector<std::unique_ptr<SessionPDU>> VirtualChannel::process(const VCDU& vcd
 
     // Abort processing of pending TP_PDU in case of drop.
     if (skip > 1) {
-      std::cerr
-        <<  "VC " << id_
-        << ": VCDU drop! (lost " << (skip - 1)
-        << "; prev: " << n_
-        << "; packet: " << vcdu.getCounter()
-        << ")"
-        << std::endl;
+      if (gapCallback_) {
+        gapCallback_(id_, skip - 1, n_, vcdu.getCounter());
+      } else {
+        std::cerr
+          <<  "VC " << id_
+          << ": VCDU drop! (lost " << (skip - 1)
+          << "; prev: " << n_
+          << "; packet: " << vcdu.getCounter()
+          << ")"
+          << std::endl;
+      }
       tpdu_.reset();
     }
   }

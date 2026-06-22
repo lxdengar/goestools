@@ -2,7 +2,8 @@
 
 namespace assembler {
 
-Assembler::Assembler() {
+Assembler::Assembler(VCDUGapCallback gapCallback)
+  : gapCallback_(std::move(gapCallback)) {
 }
 
 std::vector<std::unique_ptr<SessionPDU>> Assembler::process(const VCDU& vcdu) {
@@ -16,7 +17,7 @@ std::vector<std::unique_ptr<SessionPDU>> Assembler::process(const VCDU& vcdu) {
 
   // Create virtual channel instance if it does not yet exist
   if (vcs_.find(vcid) == vcs_.end()) {
-    vcs_.insert(std::make_pair(vcid, VirtualChannel(vcid)));
+    vcs_.insert(std::make_pair(vcid, VirtualChannel(vcid, gapCallback_)));
   }
 
   // Let virtual channel process VCDU

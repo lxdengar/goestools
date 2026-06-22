@@ -20,11 +20,27 @@
 #include "handler_nws_text.h"
 #include "handler_text.h"
 #include "options.h"
+#include "version-gen.h"
 
 #include "lrit_processor.h"
 #include "packet_processor.h"
 
 using namespace util;
+
+namespace {
+
+std::string modeName(ProcessMode mode) {
+  return mode == ProcessMode::PACKET ? "packet" : "lrit";
+}
+
+std::string spacecraftName(const std::string& origin) {
+  if (origin.compare(0, 4, "goes") == 0) {
+    return "G" + origin.substr(4);
+  }
+  return origin;
+}
+
+} // namespace
 
 int main(int argc, char** argv) {
   // Dealing with time zones is a PITA even if you only care about UTC.
@@ -32,17 +48,50 @@ int main(int argc, char** argv) {
   setenv("TZ", "", 1);
 
   auto opts = parseOptions(argc, argv);
+  auto logger = std::make_shared<Logger>(
+    opts.logLevel, opts.logFormat, opts.summaryInterval);
   auto config = Config::load(opts.config);
   if (!config.ok) {
-    std::cerr << "Invalid configuration: " << config.error << std::endl;
+    nlohmann::json fields;
+    fields["config"] = opts.config;
+    fields["error"] = config.error;
+    logger->event(LogLevel::ERROR, "invalid_configuration", fields);
     exit(1);
   }
+
+  std::set<std::string> configuredSpacecraft;
+  for (const auto& handler : config.handlers) {
+    if (handler.origin.compare(0, 4, "goes") == 0) {
+      configuredSpacecraft.insert(spacecraftName(handler.origin));
+    }
+  }
+
+  nlohmann::json startup;
+  startup["commit"] = GIT_COMMIT_HASH;
+  startup["mode"] = modeName(opts.mode);
+  startup["config"] = opts.config;
+  startup["output"] = opts.out;
+  startup["force"] = opts.force;
+  startup["handlers"] = config.handlers.size();
+  startup["log_level"] = logLevelName(opts.logLevel);
+  startup["log_format"] = logFormatName(opts.logFormat);
+  startup["summary_interval_s"] = opts.summaryInterval;
+  startup["spacecraft"] = nlohmann::json::array();
+  for (const auto& spacecraft : configuredSpacecraft) {
+    startup["spacecraft"].push_back(spacecraft);
+  }
+  if (!opts.subscribe.empty()) {
+    startup["source"] = opts.subscribe;
+  } else {
+    startup["inputs"] = opts.paths;
+  }
+  logger->event(LogLevel::INFO, "started", startup);
 
   // Make sure output directory exists
   mkdirp(opts.out);
 
   // Handlers share a file writer instance
-  auto fileWriter = std::make_shared<FileWriter>(opts.out);
+  auto fileWriter = std::make_shared<FileWriter>(opts.out, logger);
   if (opts.force) {
     fileWriter->setForce(true);
   }
@@ -80,7 +129,9 @@ int main(int argc, char** argv) {
         continue;
       }
 
-      std::cerr << "Invalid image handler origin: " << handler.origin << std::endl;
+      nlohmann::json fields;
+      fields["origin"] = handler.origin;
+      logger->event(LogLevel::ERROR, "invalid_image_origin", fields);
       exit(1);
     } else if (handler.type == "emwin") {
       handlers.push_back(
@@ -104,16 +155,20 @@ int main(int argc, char** argv) {
         continue;
       }
 
-      std::cerr << "Invalid text handler product: " << handler.origin << std::endl;
+      nlohmann::json fields;
+      fields["origin"] = handler.origin;
+      logger->event(LogLevel::ERROR, "invalid_text_origin", fields);
       exit(1);
     } else {
-      std::cerr << "Invalid handler type: " << handler.type << std::endl;
+      nlohmann::json fields;
+      fields["type"] = handler.type;
+      logger->event(LogLevel::ERROR, "invalid_handler_type", fields);
       exit(1);
     }
   }
 
   if (opts.mode == ProcessMode::PACKET) {
-    PacketProcessor p(std::move(handlers));
+    PacketProcessor p(std::move(handlers), logger);
     std::unique_ptr<PacketReader> reader;
 
     // Either use subscriber or read packets from files
@@ -124,12 +179,15 @@ int main(int argc, char** argv) {
     }
 
     // Run in verbose mode when stdout is a TTY.
-    bool verbose = isatty(fileno(stdout));
+    bool verbose = opts.progress && logger->progressAllowed() &&
+      isatty(fileno(stdout));
     p.run(reader, verbose);
   }
 
   if (opts.mode == ProcessMode::LRIT) {
-    LRITProcessor p(std::move(handlers));
+    LRITProcessor p(std::move(handlers), logger);
     p.run(argc, argv);
   }
+
+  logger->event(LogLevel::INFO, "stopped");
 }

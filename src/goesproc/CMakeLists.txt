@@ -14,6 +14,7 @@ set(GOESPROC_SRCS
   handler_text.cc
   image.cc
   lrit_processor.cc
+  log.cc
   options.cc
   packet_processor.cc
   string.cc

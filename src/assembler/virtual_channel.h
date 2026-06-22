@@ -2,6 +2,7 @@
 
 #include <map>
 #include <memory>
+#include <functional>
 #include <vector>
 
 #include "session_pdu.h"
@@ -10,9 +11,12 @@
 
 namespace assembler {
 
+using VCDUGapCallback =
+  std::function<void(int vcid, unsigned lost, unsigned previous, unsigned current)>;
+
 class VirtualChannel {
 public:
-  explicit VirtualChannel(int id);
+  explicit VirtualChannel(int id, VCDUGapCallback gapCallback = nullptr);
 
   // For every packet processed, we may get back multiple completed
   // Session PDUs for further processing.
@@ -29,6 +33,7 @@ protected:
 
   int id_;
   int n_;
+  VCDUGapCallback gapCallback_;
 
   // Incomplete Transport Protocol Data Unit.
   std::unique_ptr<TransportPDU> tpdu_;

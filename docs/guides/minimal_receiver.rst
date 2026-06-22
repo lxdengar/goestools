@@ -69,12 +69,17 @@ in some SDRs)
 
 .. important::
 
-   A similar grid dish antenna works for me at my location (San
-   Francisco Bay Area; the exact antenna is no longer available).
-   I can receive GOES-15 at its west location
-   (135 degrees west), GOES-16 at its east location (75 degrees west),
-   and GOES-17 at its checkout location (89 degrees west). GOES-16 is
-   furthest away and at 25 degrees elevation at my location.
+   This passage describes the satellites used for the original receiver test.
+   GOES-17 is no longer the operational GOES-West spacecraft; NOAA replaced it
+   in that role with GOES-18. Configure current GOES-West processing with
+   ``origin = "goes18"``. Keep ``origin = "goes17"`` only when processing
+   archived GOES-17 data.
+
+   A similar grid dish antenna worked for the original author in the San
+   Francisco Bay Area (the exact antenna is no longer available). That setup
+   received GOES-15 at 135 degrees west, GOES-16 at 75 degrees west, and
+   GOES-17 at its former checkout location of 89 degrees west. GOES-16 was
+   furthest away and at 25 degrees elevation at that location.
 
    If your location has the satellite you're interested in at a lower
    elevation than 25 degrees, you may need a bigger dish. However,
@@ -85,7 +90,8 @@ in some SDRs)
    Find your local azimuth and elevation on `Satview`_
    (`GOES-15 <http://www.satview.org/?sat_id=36411U>`_,
    `GOES-16 <http://www.satview.org/?sat_id=41866U>`_,
-   `GOES-17 <http://www.satview.org/?sat_id=43226U>`_).
+   `GOES-17 <http://www.satview.org/?sat_id=43226U>`_, or
+   `GOES-18 <http://www.satview.org/?sat_id=51850U>`_).
 
 .. _satview: http://www.satview.org/
 

@@ -41,6 +41,29 @@ where to write output. The sample file includes examples for:
 - NWS text.
 - Generic text.
 
+Image remap, lookup-table, and map paths are resolved relative to the process
+working directory, not relative to the configuration file. The repository
+sample references bundled files under ``./share/wxstar`` and therefore works
+when ``goesproc`` is started from the repository root. Use absolute paths when
+running it from another directory or as a service.
+
+GOES-West Satellite Naming
+~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+``GOES-West`` is an operational role rather than a permanent spacecraft name.
+GOES-17 previously served in that role, but NOAA replaced it with GOES-18.
+Current GOES-West ABI imagery therefore identifies itself as GOES-18, and its
+image handlers must use:
+
+.. code-block:: toml
+
+   origin = "goes18"
+
+A handler configured with ``origin = "goes17"`` only matches historical
+GOES-17 products; it does not process current GOES-18 imagery. The default
+``etc/goesproc.conf`` includes GOES-18 handlers and writes their output beneath
+``./goes18``.
+
 Typical Live Processing
 -----------------------
 

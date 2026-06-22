@@ -10,7 +10,7 @@ namespace assembler {
 // them to the appropriate virtual channels.
 class Assembler {
 public:
-  explicit Assembler();
+  explicit Assembler(VCDUGapCallback gapCallback = nullptr);
 
   // For every packet processed, we may get back multiple completed
   // Session PDUs for further processing.
@@ -18,6 +18,7 @@ public:
 
 protected:
   std::map<int, VirtualChannel> vcs_;
+  VCDUGapCallback gapCallback_;
 };
 
 } // namespace assembler

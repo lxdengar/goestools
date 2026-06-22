@@ -3,7 +3,6 @@
 #include <sys/stat.h>
 
 #include <fstream>
-#include <iomanip>
 
 #include <util/fs.h>
 
@@ -12,82 +11,131 @@
 
 using namespace util;
 
-FileWriter::FileWriter(const std::string& prefix) : prefix_(prefix) {
+FileWriter::FileWriter(
+    const std::string& prefix,
+    const std::shared_ptr<Logger>& logger)
+  : prefix_(prefix),
+    logger_(logger) {
   force_ = false;
 }
 
 FileWriter::~FileWriter() {
 }
 
-void FileWriter::logTime(const Timer* t) {
+nlohmann::json FileWriter::outputFields(
+    const std::string& path,
+    const Timer* t,
+    const nlohmann::json& fields) const {
+  auto output = fields;
+  output["path"] = path;
   if (t) {
-    std::cout
-      << std::fixed
-      << std::setprecision(3)
-      << " (took "
-      << t->elapsed().count()
-      << "s)"
-      << std::endl;
+    output["duration_ms"] = static_cast<uint64_t>(t->elapsed().count() * 1000);
+  }
+  return output;
+}
+
+void FileWriter::logWriteResult(
+    bool ok,
+    const std::string& path,
+    const Timer* t,
+    const nlohmann::json& fields) {
+  auto output = outputFields(path, t, fields);
+  if (ok) {
+    struct stat st;
+    if (stat(path.c_str(), &st) == 0) {
+      output["bytes"] = static_cast<uint64_t>(st.st_size);
+    }
+    logger_->increment("written");
+    if (output.count("bytes") > 0) {
+      logger_->increment("bytes_written", output["bytes"].get<uint64_t>());
+    }
+    logger_->event(LogLevel::INFO, "output_written", output);
   } else {
-    std::cout << std::endl;
+    logger_->increment("failed");
+    logger_->event(LogLevel::ERROR, "output_failed", output);
   }
 }
 
 void FileWriter::write(
   const std::string& tail,
   const cv::Mat& mat,
-  const Timer* t) {
+  const Timer* t,
+  const nlohmann::json& fields) {
   auto path = buildPath(tail);
   if (!tryWrite(path)) {
-    std::cout << "Skipping (file exists): " << path;
-    logTime(t);
+    logger_->increment("skipped");
+    logger_->event(
+      LogLevel::INFO,
+      "output_skipped",
+      outputFields(path, t, fields));
     return;
   }
 
-  std::cout << "Writing: " << path;
-  cv::imwrite(path, mat);
-  logTime(t);
+  bool ok = false;
+  try {
+    ok = cv::imwrite(path, mat);
+  } catch (const cv::Exception& error) {
+    auto output = fields;
+    output["error"] = error.what();
+    logWriteResult(false, path, t, output);
+    return;
+  }
+  auto output = fields;
+  output["width"] = mat.cols;
+  output["height"] = mat.rows;
+  logWriteResult(ok, path, t, output);
 }
 
 void FileWriter::write(
   const std::string& tail,
   const std::vector<char>& data,
-  const Timer* t) {
+  const Timer* t,
+  const nlohmann::json& fields) {
   auto path = buildPath(tail);
   if (!tryWrite(path)) {
-    std::cout << "Skipping (file exists): " << path;
-    logTime(t);
+    logger_->increment("skipped");
+    logger_->event(
+      LogLevel::INFO,
+      "output_skipped",
+      outputFields(path, t, fields));
     return;
   }
 
-  std::cout << "Writing: " << path;
-  std::ofstream of(path);
+  std::ofstream of(path, std::ios::binary);
   of.write(data.data(), data.size());
-  logTime(t);
+  of.close();
+  logWriteResult(static_cast<bool>(of), path, t, fields);
 }
 
 void FileWriter::write(
   const std::string& tail,
   const nlohmann::json& json,
-  const Timer* t) {
+  const Timer* t,
+  const nlohmann::json& fields) {
   auto path = buildPath(tail);
   if (!tryWrite(path)) {
-    std::cout << "Skipping (file exists): " << path;
-    logTime(t);
+    logger_->increment("skipped");
+    logger_->event(
+      LogLevel::INFO,
+      "output_skipped",
+      outputFields(path, t, fields));
     return;
   }
 
-  std::cout << "Writing: " << path;
   std::ofstream of(path);
   of << json;
-  logTime(t);
+  of.close();
+  logWriteResult(static_cast<bool>(of), path, t, fields);
 }
 
-void FileWriter::writeHeader(const lrit::File& file, const std::string& path) {
+void FileWriter::writeHeader(
+    const lrit::File& file,
+    const std::string& path,
+    const nlohmann::json& fields) {
   auto jsonHeader = lrit::toJSON(file);
   jsonHeader["Path"] = buildPath(path);
   auto jsonPath = removeSuffix(path) + ".json";
-  write(jsonPath, jsonHeader);
+  write(jsonPath, jsonHeader, nullptr, fields);
 }
 
 bool FileWriter::tryWrite(const std::string& path) {

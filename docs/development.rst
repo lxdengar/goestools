@@ -10,5 +10,6 @@ Developer and modernization notes are collected here.
    development/modernization-log
    development/ubuntu-modernization-notes
    development/contributor-guidance
+   development/goesproc-logging-plan
    development/hackrf-support-plan
    development/airspy-r2-support-note

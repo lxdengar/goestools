@@ -171,12 +171,20 @@ Process live packets with ``goesproc``:
 
 .. code-block:: sh
 
+   cd /path/to/goestools
    mkdir -p ~/goes-data
    build/src/goesproc/goesproc \
      -c ~/goesproc.conf \
      -m packet \
      --subscribe tcp://127.0.0.1:5004 \
      --out ~/goes-data
+
+The sample ``goesproc.conf`` uses bundled contrast-curve and lookup-table
+images under ``share/wxstar``. Relative resource paths are resolved from the
+directory where ``goesproc`` is started, not from the configuration file's
+directory. Run the command from the repository root as shown above, or replace
+those resource paths with absolute paths for services and other working
+directories.
 
 Alternatively, assemble LRIT files first:
 

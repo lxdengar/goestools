@@ -18,6 +18,30 @@ using namespace util;
 
 namespace {
 
+std::string frameTime(const struct timespec& ts) {
+  std::array<char, 32> buffer;
+  auto len = strftime(
+    buffer.data(), buffer.size(), "%Y-%m-%dT%H:%M:%SZ", gmtime(&ts.tv_sec));
+  return std::string(buffer.data(), len);
+}
+
+nlohmann::json productFields(const GOESRProduct& product) {
+  nlohmann::json fields;
+  fields["spacecraft"] = product.getSatellite();
+  fields["spacecraft_id"] = product.getSatelliteID();
+  fields["product"] = product.getProduct().nameShort;
+  fields["region"] = product.getRegion().nameShort;
+  fields["channel"] = product.getChannel().nameShort;
+  fields["frame_time"] = frameTime(product.getFrameStart());
+  fields["segmented"] = product.isSegmented();
+  fields["received_segments"] = product.receivedSegments();
+  fields["expected_segments"] = product.expectedSegments();
+  if (product.isSegmented()) {
+    fields["image_id"] = product.imageIdentifier();
+  }
+  return fields;
+}
+
 int getChannelFromFileName(const std::string& fileName) {
   const auto parts = split(fileName, '-');
   ASSERT(parts.size() >= 4);
@@ -421,8 +445,19 @@ void GOESRImageHandler::handle(std::shared_ptr<const lrit::File> f) {
     return;
   }
 
+  auto logger = fileWriter_->logger();
+  logger->increment("matched");
+  if (logger->observeSpacecraft(tmp.getSatellite())) {
+    nlohmann::json fields;
+    fields["spacecraft"] = tmp.getSatellite();
+    fields["spacecraft_id"] = tmp.getSatelliteID();
+    logger->event(LogLevel::INFO, "spacecraft_detected", fields);
+  }
+
   // If this is not a segmented image we can post process immediately
   if (!tmp.isSegmented()) {
+    logger->increment("complete");
+    logger->event(LogLevel::INFO, "product_complete", productFields(tmp));
     handleImage(std::move(tmp));
     return;
   }
@@ -440,6 +475,7 @@ void GOESRImageHandler::handle(std::shared_ptr<const lrit::File> f) {
   auto it = products_.find(key);
   if (it == products_.end()) {
     // No existing product found; use this one as the first one
+    logger->event(LogLevel::DEBUG, "product_started", productFields(tmp));
     products_[key] = std::move(tmp);
   } else {
     // If the current segment has the same image identifier as the
@@ -448,8 +484,16 @@ void GOESRImageHandler::handle(std::shared_ptr<const lrit::File> f) {
     auto& product = it->second;
     if (product.imageIdentifier() == tmp.imageIdentifier()) {
       product.add(f);
+      auto fields = productFields(product);
+      fields["segment"] = tmp.currentSegment();
+      logger->event(LogLevel::DEBUG, "segment_received", fields);
     } else {
-      // TODO: Log that we drop the existing image
+      logger->increment("incomplete");
+      logger->event(
+        LogLevel::WARNING,
+        "product_incomplete",
+        productFields(product));
+      logger->event(LogLevel::DEBUG, "product_started", productFields(tmp));
       products_[key] = std::move(tmp);
     }
   }
@@ -457,6 +501,8 @@ void GOESRImageHandler::handle(std::shared_ptr<const lrit::File> f) {
   // If the product is complete we can post process it
   auto& product = products_[key];
   if (product.isComplete()) {
+    logger->increment("complete");
+    logger->event(LogLevel::INFO, "product_complete", productFields(product));
     handleImage(std::move(product));
     products_.erase(key);
     return;
@@ -505,9 +551,10 @@ void GOESRImageHandler::handleImage(GOESRProduct product) {
   auto mat = image->getRawImage();
   overlayMaps(product, mat);
   auto path = fb.build(config_.filename, config_.format);
-  fileWriter_->write(path, mat, &t);
+  auto fields = productFields(product);
+  fileWriter_->write(path, mat, &t, fields);
   if (config_.json) {
-    fileWriter_->writeHeader(product.firstFile(), path);
+    fileWriter_->writeHeader(product.firstFile(), path, fields);
   }
 }
 
@@ -516,6 +563,12 @@ void GOESRImageHandler::handleImageForFalseColor(GOESRProduct p1) {
 
   const auto key = p1.getRegion().nameShort;
   if (falseColor_.find(key) == falseColor_.end()) {
+    auto fields = productFields(p1);
+    fields["waiting_for"] = config_.channels.front() == p1.getChannel().nameShort
+      ? config_.channels.back()
+      : config_.channels.front();
+    fileWriter_->logger()->event(
+      LogLevel::DEBUG, "false_color_waiting", fields);
     falseColor_[key] = std::move(p1);
     return;
   }
@@ -527,6 +580,11 @@ void GOESRImageHandler::handleImageForFalseColor(GOESRProduct p1) {
 
   // Verify that observation time is identical.
   if (p0.getFrameStart().tv_sec != p1.getFrameStart().tv_sec) {
+    auto fields = productFields(p0);
+    fields["next_frame_time"] = frameTime(p1.getFrameStart());
+    fileWriter_->logger()->increment("false_color_incomplete");
+    fileWriter_->logger()->event(
+      LogLevel::WARNING, "false_color_time_mismatch", fields);
     falseColor_[key] = std::move(p1);
     return;
   }
@@ -534,6 +592,8 @@ void GOESRImageHandler::handleImageForFalseColor(GOESRProduct p1) {
   // If the channels are the same, there has been duplication on the
   // packet stream and we can ignore the latest one.
   if (p0.getChannel().nameShort == p1.getChannel().nameShort) {
+    fileWriter_->logger()->event(
+      LogLevel::DEBUG, "false_color_duplicate", productFields(p1));
     falseColor_[key] = std::move(p0);
     return;
   }
@@ -575,9 +635,15 @@ void GOESRImageHandler::handleImageForFalseColor(GOESRProduct p1) {
   auto mat = out->getRawImage();
   overlayMaps(p0, mat);
   auto path = fb.build(config_.filename, config_.format);
-  fileWriter_->write(path, mat, &t);
+  auto fields = productFields(p0);
+  fields["channel"] = "FC";
+  fields["source_channels"] = config_.channels;
+  fileWriter_->logger()->increment("false_color_complete");
+  fileWriter_->logger()->event(
+    LogLevel::INFO, "false_color_complete", fields);
+  fileWriter_->write(path, mat, &t, fields);
   if (config_.json) {
-    fileWriter_->writeHeader(p0.firstFile(), path);
+    fileWriter_->writeHeader(p0.firstFile(), path, fields);
   }
 }
 

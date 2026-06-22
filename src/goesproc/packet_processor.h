@@ -7,6 +7,7 @@
 #include "lib/packet_reader.h"
 
 #include "handler.h"
+#include "log.h"
 
 // Takes a list of files that store LRIT/HRIT VCDUs.
 //
@@ -18,11 +19,14 @@
 //
 class PacketProcessor {
 public:
-  explicit PacketProcessor(std::vector<std::unique_ptr<Handler> > handlers);
+  PacketProcessor(
+    std::vector<std::unique_ptr<Handler> > handlers,
+    const std::shared_ptr<Logger>& logger);
 
   void run(std::unique_ptr<PacketReader>& reader, bool verbose);
 
 protected:
   std::vector<std::unique_ptr<Handler> > handlers_;
+  std::shared_ptr<Logger> logger_;
   assembler::Assembler assembler_;
 };
